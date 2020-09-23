@@ -1,6 +1,6 @@
-# dataworks-repo-template
+# historic-data-loader
 
-## Description
+## historic_data_loader
 
 This repo contains Makefile to fit the standard pattern.
 This repo is a base to create new non-Terraform repos, adding the githooks submodule, making the repo ready for use.
