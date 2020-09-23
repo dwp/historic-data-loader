@@ -47,5 +47,4 @@ venv/
 *.csv
 env/
 tmp/
-
-
+test-results/*
