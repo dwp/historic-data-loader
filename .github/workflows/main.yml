@@ -7,7 +7,6 @@ on:
     paths-ignore:
       - README.md
       - LICENSE
-      - test-results/*
 
 jobs:
   get-publish-version:
