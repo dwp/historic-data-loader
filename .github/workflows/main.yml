@@ -44,7 +44,7 @@ jobs:
           draft: false
           prerelease: false
       - name: Gunzip Asset Prior to Upload
-        run: gzip ./build/distributions/historic-data-importer-0.0.1.tar
+        run: gzip ./build/distributions/historic-data-loader-0.0.1.tar
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
@@ -52,8 +52,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/historic-data-importer-0.0.1.jar
-          asset_name: historic-data-importer-${{ needs.get-publish-version.outputs.publish-version }}.jar
+          asset_path: ./build/libs/historic-data-loader-0.0.1.jar
+          asset_name: historic-data-loader-${{ needs.get-publish-version.outputs.publish-version }}.jar
           asset_content_type: application
 
   build-app:
