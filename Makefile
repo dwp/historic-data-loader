@@ -1,8 +1,6 @@
-SHELL=bash
-S3_READY_REGEX=^Ready\.$
-aws_dev_account=NOT_SET
-temp_image_name=NOT_SET
-aws_default_region=NOT_SET
+SHELL:=bash
+
+default: help
 
 .PHONY: help
 help:
@@ -10,22 +8,14 @@ help:
 
 .PHONY: bootstrap
 bootstrap: ## Bootstrap local environment for first use
-	make git-hooks
+	@make git-hooks
 
 .PHONY: git-hooks
-git-hooks: ## Set up hooks in .git/hooks
-	@{ \
-		HOOK_DIR=.git/hooks; \
-		for hook in $(shell ls .githooks); do \
-			if [ ! -h $${HOOK_DIR}/$${hook} -a -x $${HOOK_DIR}/$${hook} ]; then \
-				mv $${HOOK_DIR}/$${hook} $${HOOK_DIR}/$${hook}.local; \
-				echo "moved existing $${hook} to $${hook}.local"; \
-			fi; \
-			ln -s -f ../../.githooks/$${hook} $${HOOK_DIR}/$${hook}; \
-		done \
-	}
+git-hooks: ## Set up hooks in .githooks
+	@git submodule update --init .githooks ; \
+	git config core.hooksPath .githooks \
 
-local-build: ## Build Kafka2Hbase with gradle
+local-build: ## Build with gradle
 	gradle :unit build -x test
 
 local-dist: ## Assemble distribution files in build/dist with gradle
