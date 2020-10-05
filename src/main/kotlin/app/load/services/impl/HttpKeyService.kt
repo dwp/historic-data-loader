@@ -1,9 +1,11 @@
 package app.load.services.impl
 
+import app.load.configurations.HttpClientProviderConfiguration
 import app.load.domain.DataKeyResult
 import app.load.exceptions.DataKeyDecryptionException
 import app.load.exceptions.DataKeyServiceUnavailableException
 import app.load.providers.HttpClientProvider
+import app.load.providers.SecureHttpClientProvider
 import app.load.services.KeyService
 import app.utils.UUIDGenerator
 import com.google.gson.Gson
@@ -19,7 +21,8 @@ import java.io.Reader
 import java.net.URLEncoder
 
 class HttpKeyService(private val httpClientProvider: HttpClientProvider,
-                     private val uuidGenerator: UUIDGenerator) : KeyService {
+                     private val uuidGenerator: UUIDGenerator,
+                     private val dataKeyServiceUrl: String): KeyService {
 
     override fun decryptKey(encryptionKeyId: String, encryptedKey: String): String {
         val dksCorrelationId = uuidGenerator.randomUUID()
@@ -110,10 +113,12 @@ class HttpKeyService(private val httpClientProvider: HttpClientProvider,
 
     private var decryptedKeyCache = mutableMapOf<String, String>()
 
-    private lateinit var dataKeyServiceUrl: String
 
     companion object {
         val logger = DataworksLogger.getLogger(HttpKeyService::class.toString())
-    }
 
+        fun connect(): KeyService {
+            return HttpKeyService(SecureHttpClientProvider.connect(), UUIDGenerator(), HttpClientProviderConfiguration.dksUrl)
+        }
+    }
 }

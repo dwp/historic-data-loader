@@ -1,7 +1,10 @@
 package app.load.mapreduce
 
+import app.load.domain.EncryptionMetadata
+import app.load.services.impl.HttpKeyService
 import app.load.utility.Converter
 import app.load.utility.MessageParser
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.IOUtils
@@ -21,8 +24,12 @@ class UcRecordReader : RecordReader<LongWritable, Text>() {
 
     override fun initialize(split: InputSplit, context: TaskAttemptContext) =
             (split as FileSplit).path.let { path ->
+                val keyService = HttpKeyService.connect()
                 logger.info("Starting split", "path" to path.toString())
                 path.getFileSystem(context.configuration).let { fs ->
+                    val metadataPath = Path(path.toString().replace("gz.enc", "encryption.json"))
+                    val metadata = ObjectMapper().readValue(fs.open(metadataPath), EncryptionMetadata::class.java)
+                    val plaintextKey = keyService.decryptKey(metadata.keyEncryptionKeyId, metadata.encryptedEncryptionKey)
                     input = BufferedReader(InputStreamReader(GZIPInputStream(fs.open(path))))
                     currentFileSystem = fs
                     currentPath = path
@@ -53,8 +60,6 @@ class UcRecordReader : RecordReader<LongWritable, Text>() {
     private var value: Text? = null
     private var currentPath: Path? = null
     private var currentFileSystem: FileSystem? = null
-    private val messageParser = MessageParser()
-    private val convertor = Converter()
 
     companion object {
         private val logger = DataworksLogger.getLogger(UcRecordReader::class.java.toString())
