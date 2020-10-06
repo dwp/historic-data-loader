@@ -33,7 +33,7 @@ class S3RepositoryTest: StringSpec() {
                 } doReturnConsecutively listOf(truncatedResult1, truncatedResult2, finalResult)
             }
 
-            val s3Repository = S3Repository(amazonS3, bucket, objectPrefix, "db.database.collection")
+            val s3Repository = S3Repository(amazonS3, bucket, objectPrefix, "database.collection")
             val actual = s3Repository.objectSummaries()
 
             actual shouldBe listOf(objectSummaries1, objectSummaries2, objectSummaries3).flatten()
@@ -55,7 +55,7 @@ class S3RepositoryTest: StringSpec() {
         "Filters out non-targeted topics" {
             val (targetedSummaries, filteredSummaries) = mixedSummaries(1)
             val amazonS3 = amazonS3(targetedSummaries, filteredSummaries)
-            val s3Repository = S3Repository(amazonS3, bucket, objectPrefix, "db.database.collection")
+            val s3Repository = S3Repository(amazonS3, bucket, objectPrefix, "database.collection")
             val actual = s3Repository.objectSummaries()
             actual shouldBe targetedSummaries
         }
@@ -91,16 +91,16 @@ class S3RepositoryTest: StringSpec() {
 
     private fun objectSummary(requestNumber: Int, objectNumber: Int) =
             mock<S3ObjectSummary> {
-                on { key } doReturn key("db.database.collection", requestNumber, objectNumber)
+                on { key } doReturn key("database.collection", requestNumber, objectNumber)
             }
 
     private fun filteredSummary(requestNumber: Int, objectNumber: Int) =
             mock<S3ObjectSummary> {
-                on { key } doReturn key("db.filtered_database.filtered_collection", requestNumber, objectNumber)
+                on { key } doReturn key("filtered_database.filtered_collection", requestNumber, objectNumber)
             }
 
     private fun key(topic: String, requestNumber: Int, objectNumber: Int) =
-            "corporate_storage/2020/01/01/database/collection/${topic}_${requestNumber}_${objectNumber}-${objectNumber + 10}.jsonl.gz"
+            "corporate_storage/2020/01/01/database/collection/${topic}_${requestNumber}0${objectNumber}.json.gz.enc"
 
     private fun objectSummaryResult(requestNumber: Int, truncated: Boolean, summaries: List<S3ObjectSummary>): ListObjectsV2Result =
             mock {

@@ -7,7 +7,8 @@ import app.load.exceptions.DataKeyServiceUnavailableException
 import app.load.providers.HttpClientProvider
 import app.load.providers.SecureHttpClientProvider
 import app.load.services.KeyService
-import app.utils.UUIDGenerator
+import app.load.utility.UUIDGenerator
+import app.load.utility.impl.UUIDGeneratorImpl
 import com.google.gson.Gson
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
@@ -20,6 +21,7 @@ import java.io.InputStreamReader
 import java.io.Reader
 import java.net.URLEncoder
 
+// TODO: retries
 class HttpKeyService(private val httpClientProvider: HttpClientProvider,
                      private val uuidGenerator: UUIDGenerator,
                      private val dataKeyServiceUrl: String): KeyService {
@@ -118,7 +120,7 @@ class HttpKeyService(private val httpClientProvider: HttpClientProvider,
         val logger = DataworksLogger.getLogger(HttpKeyService::class.toString())
 
         fun connect(): KeyService {
-            return HttpKeyService(SecureHttpClientProvider.connect(), UUIDGenerator(), HttpClientProviderConfiguration.dksUrl)
+            return HttpKeyService(SecureHttpClientProvider.connect(), UUIDGeneratorImpl(), HttpClientProviderConfiguration.dksUrl)
         }
     }
 }

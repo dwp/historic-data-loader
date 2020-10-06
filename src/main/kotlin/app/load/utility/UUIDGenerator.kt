@@ -1,10 +1,5 @@
-package app.utils
+package app.load.utility
 
-import java.util.*
-
-class UUIDGenerator {
-
-    fun randomUUID(): String {
-        return UUID.randomUUID().toString()
-    }
+interface UUIDGenerator {
+    fun randomUUID(): String
 }

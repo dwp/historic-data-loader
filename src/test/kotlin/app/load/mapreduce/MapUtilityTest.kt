@@ -117,14 +117,14 @@ class MapUtilityTest: StringSpec() {
             testIdObjectWithInnerDateStringReturnedUnchanged(MapUtility.ARCHIVED_DATE_TIME_FIELD)
         }
 
-        "fun testIdStringReturnedAsString()" {
+        "testIdStringReturnedAsString" {
             val mapUtility = MapUtility(mock())
             val id = JsonPrimitive("id")
             val actual = mapUtility.normalisedId(Gson(), id)
             actual shouldBe Pair("id", MapUtility.Companion.IdModification.UnmodifiedStringId)
         }
 
-        "fun testMongoIdStringReturnedAsString()" {
+        "testMongoIdStringReturnedAsString" {
             val mapUtility = MapUtility(mock())
             val oid = com.google.gson.JsonObject()
             val oidValue = "OID_VALUE"
@@ -133,7 +133,7 @@ class MapUtilityTest: StringSpec() {
             actual shouldBe Pair(oidValue, MapUtility.Companion.IdModification.FlattenedMongoId)
         }
 
-        "fun testIdNumberReturnedAsObject()" {
+        "testIdNumberReturnedAsObject" {
             val mapUtility = MapUtility(mock())
             val id = JsonPrimitive( 12345)
             val actual = mapUtility.normalisedId(Gson(), id)
@@ -141,7 +141,7 @@ class MapUtilityTest: StringSpec() {
             actual shouldBe Pair(expectedId, MapUtility.Companion.IdModification.UnmodifiedStringId)
         }
 
-        "fun testIdArrayReturnedAsNull()" {
+        "testIdArrayReturnedAsNull" {
             val mapUtility = MapUtility(mock())
             val arrayValue = com.google.gson.JsonArray()
             arrayValue.add("1")
@@ -151,7 +151,7 @@ class MapUtilityTest: StringSpec() {
             actual shouldBe expected
         }
 
-        "fun testIdNullReturnedAsEmpty()" {
+        "testIdNullReturnedAsEmpty" {
             val mapUtility = MapUtility(mock())
             val nullValue = com.google.gson.JsonNull.INSTANCE
             val actual = mapUtility.normalisedId(Gson(), nullValue)
@@ -159,7 +159,7 @@ class MapUtilityTest: StringSpec() {
             actual shouldBe expected
         }
 
-        "fun testOverwriteFieldValueOverwritesCorrectValue()" {
+        "testOverwriteFieldValueOverwritesCorrectValue" {
             val mapUtility = MapUtility(mock())
             val id = "OID_WRENCHED_FROM_MONGO_ID"
             val lastModifiedDateTime = "DATETIME_WRENCHED_FROM_MONGO_ID"
@@ -176,7 +176,7 @@ class MapUtilityTest: StringSpec() {
             actual shouldBe expected
         }
 
-        "fun testOverwriteFieldWithObjectOverwritesCorrectValue()" {
+        "testOverwriteFieldWithObjectOverwritesCorrectValue" {
             val mapUtility = MapUtility(mock())
             val id = Gson().fromJson("""{
             |    "key1": "val1",
@@ -202,7 +202,7 @@ class MapUtilityTest: StringSpec() {
             actual shouldBe expected
         }
 
-        "fun testCopyWhenFieldExistsInSourceButNotTarget()" {
+        "testCopyWhenFieldExistsInSourceButNotTarget" {
             val mapUtility = MapUtility(mock())
             val sourceRecord = Gson().fromJson("""{ "SOURCE_KEY": "SOURCE_VALUE" }""", com.google.gson.JsonObject::class.java)
             val targetRecord = Gson().fromJson("""{ "TARGET_KEY": "TARGET_VALUE" }""", com.google.gson.JsonObject::class.java)
@@ -211,7 +211,7 @@ class MapUtilityTest: StringSpec() {
             targetRecord shouldBe expected
         }
 
-        "fun testCopyWhenFieldExistsInSourceAndTarget()" {
+        "testCopyWhenFieldExistsInSourceAndTarget" {
             val mapUtility = MapUtility(mock())
             val sourceRecord = Gson().fromJson("""{ "SHARED_KEY": "SOURCE_VALUE" }""", com.google.gson.JsonObject::class.java)
             val targetRecord = Gson().fromJson("""{ "SHARED_KEY": "TARGET_VALUE" }""", com.google.gson.JsonObject::class.java)
@@ -220,7 +220,7 @@ class MapUtilityTest: StringSpec() {
             targetRecord shouldBe expected
         }
 
-        "fun testCopyWhenFieldNotInSource()" {
+        "testCopyWhenFieldNotInSource" {
             val mapUtility = MapUtility(mock())
             val sourceRecord = Gson().fromJson("""{ "SOURCE_KEY": "SOURCE_VALUE" }""", com.google.gson.JsonObject::class.java)
             val targetRecord = Gson().fromJson("""{ "TARGET_KEY": "TARGET_VALUE" }""", com.google.gson.JsonObject::class.java)

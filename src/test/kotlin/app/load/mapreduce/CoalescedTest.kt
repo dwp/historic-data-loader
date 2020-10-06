@@ -1028,20 +1028,20 @@ class CoalescedTest: StringSpec() {
             coalesced shouldBe expected
         }
 
-        "fun agentCoreAgentToDoArchiveIsCoalesced()" {
+        "agentCoreAgentToDoArchiveIsCoalesced" {
             val ucRecordReader = UcRecordReader()
             val actual = ucRecordReader.coalescedArchive("agent_core:agentToDoArchive")
             actual shouldBe "agent_core:agentToDo"
         }
 
-        "fun otherDbAgentToDoArchiveIsNotCoalesced()" {
+        "otherDbAgentToDoArchiveIsNotCoalesced" {
             val ucRecordReader = UcRecordReader()
             val actual = ucRecordReader.coalescedArchive("other_db:agentToDoArchive")
             actual shouldBe "other_db:agentToDoArchive"
         }
 
 
-        "fun otherCollectionIsNotCoalesced()" {
+        "otherCollectionIsNotCoalesced" {
             val ucRecordReader = UcRecordReader()
             val actual = ucRecordReader.coalescedArchive("core:calculationParts")
             actual shouldBe "core:calculationParts"
