@@ -240,6 +240,5 @@ class ReformattingTests: StringSpec() {
             actual shouldBe expected
             wasChanged shouldBe true
         }
-
     }
 }

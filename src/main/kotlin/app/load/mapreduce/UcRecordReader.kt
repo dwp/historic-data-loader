@@ -14,6 +14,8 @@ import org.apache.hadoop.mapreduce.RecordReader
 import org.apache.hadoop.mapreduce.TaskAttemptContext
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import uk.gov.dwp.dataworks.logging.DataworksLogger
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.InputStreamReader
 import java.io.LineNumberReader
 import java.security.Key
@@ -44,12 +46,20 @@ class UcRecordReader : RecordReader<LongWritable, Text>() {
                     val metadata = ObjectMapper().readValue(fs.open(metadataPath), EncryptionMetadata::class.java)
                     val plaintextKey = keyService.decryptKey(metadata.keyEncryptionKeyId, metadata.encryptedEncryptionKey)
                     val key: Key = SecretKeySpec(Base64.getDecoder().decode(plaintextKey), "AES")
-
-                    input = LineNumberReader(InputStreamReader(cipherService.decompressingDecryptingStream(fs.open(path), key, metadata.initialisationVector)))
+                    val inputStream = byteArrayInputStream(fs, path)
+                    input = LineNumberReader(InputStreamReader(cipherService.decompressingDecryptingStream(inputStream, key, metadata.initialisationVector)))
                     currentFileSystem = fs
                     currentPath = path
                 }
             }
+
+    private fun byteArrayInputStream(fs: FileSystem, path: Path?): ByteArrayInputStream {
+        val outputStream = ByteArrayOutputStream()
+        fs.open(path).use {
+            it.copyTo(outputStream)
+        }
+        return ByteArrayInputStream(outputStream.toByteArray())
+    }
 
     override fun nextKeyValue() = hasNext(input?.readLine())
 
