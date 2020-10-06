@@ -6,11 +6,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.ssl.SSLContexts
-import java.io.BufferedReader
 import java.io.File
-import java.io.FileReader
-import java.security.Provider
-import java.security.Security
 import javax.net.ssl.SSLContext
 
 class SecureHttpClientProvider(private val identityStore: String,

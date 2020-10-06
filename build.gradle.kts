@@ -20,7 +20,6 @@ dependencies {
     implementation("com.amazonaws:aws-java-sdk-s3:1.11.701")
     implementation("com.beust:klaxon:4.0.2")
     implementation("com.github.dwp:dataworks-common-logging:0.0.5")
-//    implementation("com.google.code.gson:gson:2.8.5")
     implementation("org.apache.commons:commons-lang3:3.9")
     implementation("org.apache.hbase:hbase-client:1.4.13")
     implementation("org.apache.hbase:hbase-server:1.4.13")
@@ -28,11 +27,13 @@ dependencies {
     implementation("org.bouncycastle:bcprov-ext-jdk15on:1.62")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.4.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.4.2")
-    testImplementation("io.kotest:kotest-runner-junit5-jvm:4.2.0")
+    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
     testImplementation("io.kotest:kotest-assertions-core-jvm:4.2.0")
     testImplementation("io.kotest:kotest-property:4.2.0")
-    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:4.2.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.4.2")
+    testImplementation("com.google.code.gson:gson:2.8.5")
+
 }
 
 configure<JavaPluginConvention> {

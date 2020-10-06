@@ -3,8 +3,6 @@ package app.load.mapreduce
 import app.load.domain.EncryptionMetadata
 import app.load.services.impl.AESCipherService
 import app.load.services.impl.HttpKeyService
-import app.load.utility.Converter
-import app.load.utility.MessageParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
@@ -16,14 +14,11 @@ import org.apache.hadoop.mapreduce.RecordReader
 import org.apache.hadoop.mapreduce.TaskAttemptContext
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import uk.gov.dwp.dataworks.logging.DataworksLogger
-import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.LineNumberReader
 import java.security.Key
 import java.util.*
-import java.util.zip.GZIPInputStream
 import javax.crypto.spec.SecretKeySpec
-import kotlin.time.ExperimentalTime
 
 class UcRecordReader : RecordReader<LongWritable, Text>() {
 
@@ -37,7 +32,12 @@ class UcRecordReader : RecordReader<LongWritable, Text>() {
                     filenameRegex.find(path.toString())?.let {
                         val (matchedDatabase, matchedCollection) = it.destructured
                         database = matchedDatabase
-                        collection = matchedCollection
+                        collection = coalesced(matchedCollection)
+                        val originalTableName = "$database:$collection".replace("-", "_")
+                        val tableName = coalescedArchive(originalTableName)
+                        if (originalTableName != tableName) {
+                            collection = tableName.replace(Regex("""^[^:]+:"""), "")
+                        }
                     }
 
                     val metadataPath = Path(path.toString().replace("gz.enc", "encryption.json"))
@@ -53,7 +53,6 @@ class UcRecordReader : RecordReader<LongWritable, Text>() {
 
     override fun nextKeyValue() = hasNext(input?.readLine())
 
-    @ExperimentalTime
     override fun close() {
         IOUtils.closeStream(input)
         logger.info("Completed split", "path" to "${currentPath?.toString()}")
@@ -65,7 +64,6 @@ class UcRecordReader : RecordReader<LongWritable, Text>() {
 
     private fun hasNext(line: String?) =
             if (line != null) {
-                println("LINE: '$line'.")
                 value = Text(line)
                 true
             } else {
@@ -77,11 +75,25 @@ class UcRecordReader : RecordReader<LongWritable, Text>() {
     private var currentPath: Path? = null
     private var currentFileSystem: FileSystem? = null
 
+    fun coalesced(collection: String): String {
+        val coalescedName = COALESCED_COLLECTION.replace(collection, "")
+        if (collection != coalescedName) {
+            logger.info("Using coalesced collection", "original_name" to collection, "coalesced_name" to coalescedName)
+        }
+        return coalescedName
+    }
+
+    fun coalescedArchive(tableName: String) =
+            if (coalescedNames[tableName] != null) coalescedNames[tableName] ?: "" else tableName
+
+    private val coalescedNames = mapOf("agent_core:agentToDoArchive" to "agent_core:agentToDo")
+
     companion object {
         private val logger = DataworksLogger.getLogger(UcRecordReader::class.java.toString())
-        var database = "UNSET"
-        var collection = "UNSET"
-        private val filenamePattern = """(?<database>[\w-]+)\.(?<collection>[[\w-]+]+)\.(?<filenumber>[0-9]+)\.json\.gz\.enc$"""
+        var database = ""
+        var collection = ""
+        private const val filenamePattern = """(?<database>[\w-]+)\.(?<collection>[\w-]+)\.(?<filenumber>[0-9]+)\.json\.gz\.enc$"""
         private val filenameRegex = Regex(filenamePattern, RegexOption.IGNORE_CASE)
+        private val COALESCED_COLLECTION = Regex("-(archived|eight|eighteen|eleven|fifteen|five|four|fourteen|nine|nineteen|one|seven|seventeen|six|sixteen|ten|thirteen|thirty|thirtyone|thirtytwo|three|twelve|twenty|twentyeight|twentyfive|twentyfour|twentynine|twentyone|twentyseven|twentysix|twentythree|twentytwo|two)$")
     }
 }

@@ -3,7 +3,8 @@ package app.load.mapreduce
 import app.load.domain.DataKeyResult
 import app.load.domain.EncryptionResult
 import app.load.domain.MappedRecord
-import app.load.services.impl.AESCipherService
+import app.load.exceptions.InvalidRecordException
+import app.load.services.CipherService
 import app.load.services.impl.FilterServiceImpl
 import com.google.gson.Gson
 import com.google.gson.JsonElement
@@ -13,22 +14,24 @@ import uk.gov.dwp.dataworks.logging.DataworksLogger
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MapUtility {
-    fun body(gson: Gson, dataKeyResult: DataKeyResult, lineFromDump: String): MappedRecord {
-        val (lineAsJsonBeforeReFormatting, recordIsRemovedRecord) = reformatRemoved(lineFromDump)
-        val (lineAsJson, recordIsArchivedRecord) = reformatArchived(lineAsJsonBeforeReFormatting)
+class MapUtility(private val cipherService: CipherService) {
+    fun mappedRecord(gson: Gson, dataKeyResult: DataKeyResult, lineFromDump: String): MappedRecord {
+        val (lineAsJsonBeforeReFormatting, recordIsRemovedRecord) = reformatRemoved(gson, lineFromDump)
+        val (lineAsJson, recordIsArchivedRecord) = reformatArchived(gson, lineAsJsonBeforeReFormatting)
 
         val originalId = lineAsJson.get("_id")
-
+        if (originalId == null) {
+            throw InvalidRecordException("Encountered line without id")
+        }
         val (id, idModificationType) = normalisedId(gson, originalId)
 
-        val (createdDateTime, createdDateTimeWasModified) = optionalDateTime(gson, CREATED_DATE_TIME_FIELD, lineAsJson)
-        val (removedDateTime, removedDateTimeWasModified) = optionalDateTime(gson, REMOVED_DATE_TIME_FIELD, lineAsJson)
-        val (archivedDateTime, archivedDateTimeWasModified) = optionalDateTime(gson, ARCHIVED_DATE_TIME_FIELD, lineAsJson)
+        val (createdDateTime, createdDateTimeWasModified) = optionalDateTime(CREATED_DATE_TIME_FIELD, lineAsJson)
+        val (removedDateTime, removedDateTimeWasModified) = optionalDateTime(REMOVED_DATE_TIME_FIELD, lineAsJson)
+        val (archivedDateTime, archivedDateTimeWasModified) = optionalDateTime(ARCHIVED_DATE_TIME_FIELD, lineAsJson)
 
         val originalLastModifiedDateTime = lineAsJson.get(LAST_MODIFIED_DATE_TIME_FIELD)
         val (lastModifiedDateTime, lastModifiedDateTimeSourceField)
-                = lastModifiedDateTime(gson, originalLastModifiedDateTime, createdDateTime)
+                = lastModifiedDateTime(originalLastModifiedDateTime, createdDateTime)
 
         var updatedLineAsJson = lineAsJson
         if (idModificationType == IdModification.FlattenedMongoId) {
@@ -89,29 +92,29 @@ class MapUtility {
         return cipherService.encrypt(dataKey, line.toByteArray())
     }
 
-    fun reformatRemoved(recordFromDump: String): Pair<JsonObject, Boolean> {
+    fun reformatRemoved(gson: Gson, recordFromDump: String): Pair<JsonObject, Boolean> {
         val record = messageUtils.parseGson(recordFromDump)
 
         return if (record.has(REMOVED_RECORD_FIELD)) {
-            val removedRecord = deepCopy(record.getAsJsonObject(REMOVED_RECORD_FIELD), JsonObject::class.java)
+            val removedRecord = deepCopy(gson, record.getAsJsonObject(REMOVED_RECORD_FIELD), JsonObject::class.java)
             copyField(LAST_MODIFIED_DATE_TIME_FIELD, record, removedRecord)
             copyField(REMOVED_DATE_TIME_FIELD, record, removedRecord)
             copyField(TIMESTAMP_FIELD, record, removedRecord)
             removedRecord.addProperty("@type", MONGO_DELETE)
-            Pair(deepCopy(removedRecord, JsonObject::class.java), true)
+            Pair(deepCopy(gson, removedRecord, JsonObject::class.java), true)
         } else {
             Pair(record, false)
         }
     }
 
-    fun reformatArchived(record: JsonObject): Pair<JsonObject, Boolean> {
+    fun reformatArchived(gson: Gson, record: JsonObject): Pair<JsonObject, Boolean> {
         return if (record.has(ARCHIVED_RECORD_FIELD)) {
-            val archivedRecord = deepCopy(record.getAsJsonObject(ARCHIVED_RECORD_FIELD), JsonObject::class.java)
+            val archivedRecord = deepCopy(gson, record.getAsJsonObject(ARCHIVED_RECORD_FIELD), JsonObject::class.java)
             copyField(LAST_MODIFIED_DATE_TIME_FIELD, record, archivedRecord)
             copyField(ARCHIVED_DATE_TIME_FIELD, record, archivedRecord)
             copyField(TIMESTAMP_FIELD, record, archivedRecord)
             archivedRecord.addProperty("@type", MONGO_DELETE)
-            Pair(deepCopy(archivedRecord, JsonObject::class.java), true)
+            Pair(deepCopy(gson, archivedRecord, JsonObject::class.java), true)
         } else {
             Pair(record, false)
         }
@@ -120,7 +123,7 @@ class MapUtility {
     fun normalisedId(gson: Gson, id: JsonElement?): Pair<String, IdModification> {
         if (id != null) {
             return if (id.isJsonObject) {
-                val obj = deepCopy(id.asJsonObject!!, JsonObject::class.java)
+                val obj = deepCopy(gson, id.asJsonObject!!, JsonObject::class.java)
                 if (obj.entrySet().size == 1 && obj["\$oid"] != null && obj["\$oid"].isJsonPrimitive) {
                     Pair(obj["\$oid"].asJsonPrimitive.asString, IdModification.FlattenedMongoId)
                 }
@@ -147,7 +150,7 @@ class MapUtility {
         }
     }
 
-    fun lastModifiedDateTime(gson: Gson, incomingDateTime: JsonElement?, createdDateTime: String): Pair<String, String> {
+    fun lastModifiedDateTime(incomingDateTime: JsonElement?, createdDateTime: String): Pair<String, String> {
 
         val fallBackDate = if (StringUtils.isNotBlank(createdDateTime)) createdDateTime else EPOCH
         val fallBackField = if (fallBackDate == EPOCH) EPOCH_FIELD else CREATED_DATE_TIME_FIELD
@@ -182,7 +185,7 @@ class MapUtility {
         }
     }
 
-    fun optionalDateTime(gson: Gson, name: String, parent: JsonObject): Pair<String, Boolean> {
+    fun optionalDateTime(name: String, parent: JsonObject): Pair<String, Boolean> {
         val incomingDateTime = parent.get(name)
         if (incomingDateTime != null) {
             when {
@@ -274,6 +277,8 @@ class MapUtility {
                     obj[dateField].asJsonObject["\$date"] != null &&
                     obj[dateField].asJsonObject["\$date"].isJsonPrimitive
 
+    fun <T> deepCopy(gson: Gson, obj: T, type: Class<T>?): T = gson.fromJson(gson.toJson(obj, type), type)
+
     companion object {
         val logger = DataworksLogger.getLogger(MapUtility::class.java.toString())
         const val LAST_MODIFIED_DATE_TIME_FIELD = "_lastModifiedDateTime"
@@ -283,12 +288,10 @@ class MapUtility {
         const val EPOCH = "1980-01-01T00:00:00.000+0000"
 
         const val MONGO_DELETE = "MONGO_DELETE"
-        const val MONGO_INSERT = "MONGO_INSERT"
 
         const val VALID_INCOMING_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
         const val VALID_OUTGOING_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZ"
         val VALID_DATE_FORMATS = listOf(VALID_INCOMING_DATE_FORMAT, VALID_OUTGOING_DATE_FORMAT)
-        val COALESCED_COLLECTION = Regex("-(archived|eight|eighteen|eleven|fifteen|five|four|fourteen|nine|nineteen|one|seven|seventeen|six|sixteen|ten|thirteen|thirty|thirtyone|thirtytwo|three|twelve|twenty|twentyeight|twentyfive|twentyfour|twentynine|twentyone|twentyseven|twentysix|twentythree|twentytwo|two)$")
 
         private const val LAST_MODIFIED_DATE_TIME_FIELD_STRIPPED = "_lastModifiedDateTimeStripped"
         private const val EPOCH_FIELD = "epoch"
@@ -299,8 +302,6 @@ class MapUtility {
         private val messageProducer = MessageProducer()
         private val messageUtils = MessageUtils()
         private val filterService = FilterServiceImpl()
-        private val gson = Gson()
-        private val cipherService = AESCipherService.connect()
 
         enum class IdModification {
             UnmodifiedObjectId,
@@ -311,5 +312,4 @@ class MapUtility {
         }
     }
 
-    fun <T> deepCopy(obj: T, type: Class<T>?): T = gson.fromJson(gson.toJson(obj, type), type)
 }
