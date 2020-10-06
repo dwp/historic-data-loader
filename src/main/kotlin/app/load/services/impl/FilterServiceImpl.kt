@@ -7,7 +7,7 @@ import java.text.SimpleDateFormat
 
 class FilterServiceImpl : FilterService {
 
-    override fun filterStatus(tableName: String, key: ByteArray, timestamp: Long): FilterService.FilterStatus =
+    override fun filterStatus(timestamp: Long): FilterService.FilterStatus =
             when {
                 // timestamp == epoch means a record with no last modified date
                 // so put these in as a precaution as they may be recent.
@@ -50,9 +50,9 @@ class FilterServiceImpl : FilterService {
         }
     }
 
-    private lateinit var skipEarlierThan: String
+    private var skipEarlierThan: String = ""
 
-    private lateinit var skipLaterThan: String
+    private var skipLaterThan: String = ""
 
     companion object {
         const val dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"

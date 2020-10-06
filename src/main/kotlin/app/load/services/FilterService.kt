@@ -2,7 +2,7 @@ package app.load.services
 
 interface FilterService {
 
-    fun filterStatus(tableName: String, key: ByteArray, timestamp: Long): FilterStatus
+    fun filterStatus(timestamp: Long): FilterStatus
 
     enum class FilterStatus {
         DoNotFilter, FilterTooEarly, FilterTooLate, FilterExists

@@ -1,9 +1,34 @@
 package app.load.domain
 
+import app.load.services.FilterService
 import com.amazonaws.services.s3.model.S3ObjectSummary
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import java.io.InputStream
 import java.security.Key
+
+data class MappedRecord(val key: ByteArray, val wrapper: String, val version: Long, val filterStatus: FilterService.FilterStatus) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as MappedRecord
+
+        if (!key.contentEquals(other.key)) return false
+        if (wrapper != other.wrapper) return false
+        if (version != other.version) return false
+        if (filterStatus != other.filterStatus) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = key.contentHashCode()
+        result = 31 * result + wrapper.hashCode()
+        result = 31 * result + version.hashCode()
+        result = 31 * result + filterStatus.hashCode()
+        return result
+    }
+}
 
 data class KeyPair(val dataKey: String?, val metadataKey: String?)
 data class InputStreamPair(val dataInputStream: InputStream, val metadataInputStream: InputStream,

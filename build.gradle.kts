@@ -16,16 +16,17 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.4.0")
-    implementation("org.apache.hbase:hbase-client:1.4.13")
-    implementation("org.apache.hbase:hbase-server:1.4.13")
-    implementation("com.amazonaws:aws-java-sdk-s3:1.11.701")
     implementation("com.amazonaws:aws-java-sdk-core:1.11.701")
+    implementation("com.amazonaws:aws-java-sdk-s3:1.11.701")
     implementation("com.beust:klaxon:4.0.2")
     implementation("com.github.dwp:dataworks-common-logging:0.0.5")
-    implementation("org.bouncycastle:bcprov-ext-jdk15on:1.62")
-    implementation("org.apache.httpcomponents:httpclient:4.5.9")
+//    implementation("com.google.code.gson:gson:2.8.5")
     implementation("org.apache.commons:commons-lang3:3.9")
+    implementation("org.apache.hbase:hbase-client:1.4.13")
+    implementation("org.apache.hbase:hbase-server:1.4.13")
+    implementation("org.apache.httpcomponents:httpclient:4.5.9")
+    implementation("org.bouncycastle:bcprov-ext-jdk15on:1.62")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.4.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.4.2")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.2.0")

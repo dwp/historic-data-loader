@@ -55,5 +55,6 @@ class AESCipherService(private val secureRandom: SecureRandom, private val ciphe
 
     companion object {
         val logger = DataworksLogger.getLogger(AESCipherService::class.java.toString())
+        fun connect() = AESCipherService(SecureRandom.getInstance("SHA1PRNG"), CipherInstanceProvider())
     }
 }
