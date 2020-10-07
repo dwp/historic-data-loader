@@ -14,7 +14,7 @@ class Converter {
 
     fun convertToJson(body: ByteArray): JsonObject = convertToJson(String(body))
 
-    fun convertToJson(body: String): JsonObject {
+    private fun convertToJson(body: String): JsonObject {
         try {
             val parser: Parser = Parser.default()
             val stringBuilder: StringBuilder = StringBuilder(body)

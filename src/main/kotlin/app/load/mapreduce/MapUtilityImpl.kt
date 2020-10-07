@@ -88,7 +88,7 @@ class MapUtilityImpl(private val cipherService: CipherService, private val filte
         return MappedRecord(formattedKey, messageWrapper, lastModifiedTimestampLong, filterStatus)
     }
 
-    fun encryptDbObject(dataKey: String, line: String): EncryptionResult {
+    private fun encryptDbObject(dataKey: String, line: String): EncryptionResult {
         return cipherService.encrypt(dataKey, line.toByteArray())
     }
 
@@ -277,7 +277,7 @@ class MapUtilityImpl(private val cipherService: CipherService, private val filte
                     obj[dateField].asJsonObject["\$date"] != null &&
                     obj[dateField].asJsonObject["\$date"].isJsonPrimitive
 
-    fun <T> deepCopy(gson: Gson, obj: T, type: Class<T>?): T = gson.fromJson(gson.toJson(obj, type), type)
+    private fun <T> deepCopy(gson: Gson, obj: T, type: Class<T>?): T = gson.fromJson(gson.toJson(obj, type), type)
 
     companion object {
         val logger = DataworksLogger.getLogger(MapUtilityImpl::class.java.toString())

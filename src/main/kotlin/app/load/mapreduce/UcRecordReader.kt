@@ -2,7 +2,7 @@ package app.load.mapreduce
 
 import app.load.domain.EncryptionMetadata
 import app.load.services.impl.AESCipherService
-import app.load.services.impl.HttpKeyService
+import app.load.services.impl.RetryServiceImpl
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
@@ -26,7 +26,7 @@ class UcRecordReader : RecordReader<LongWritable, Text>() {
 
     override fun initialize(split: InputSplit, context: TaskAttemptContext) =
             (split as FileSplit).path.let { path ->
-                val keyService = HttpKeyService.connect()
+                val retryService = RetryServiceImpl.connect()
                 val cipherService = AESCipherService.connect()
                 logger.info("Starting split", "path" to path.toString())
                 path.getFileSystem(context.configuration).let { fs ->
@@ -44,7 +44,7 @@ class UcRecordReader : RecordReader<LongWritable, Text>() {
 
                     val metadataPath = Path(path.toString().replace("gz.enc", "encryption.json"))
                     val metadata = ObjectMapper().readValue(fs.open(metadataPath), EncryptionMetadata::class.java)
-                    val plaintextKey = keyService.decryptKey(metadata.keyEncryptionKeyId, metadata.encryptedEncryptionKey)
+                    val plaintextKey = retryService.decryptKey(metadata.keyEncryptionKeyId, metadata.encryptedEncryptionKey)
                     val key: Key = SecretKeySpec(Base64.getDecoder().decode(plaintextKey), "AES")
                     val inputStream = byteArrayInputStream(fs, path)
                     input = LineNumberReader(InputStreamReader(cipherService.decompressingDecryptingStream(inputStream, key, metadata.initialisationVector)))
@@ -53,13 +53,11 @@ class UcRecordReader : RecordReader<LongWritable, Text>() {
                 }
             }
 
-    private fun byteArrayInputStream(fs: FileSystem, path: Path?): ByteArrayInputStream {
-        val outputStream = ByteArrayOutputStream()
-        fs.open(path).use {
-            it.copyTo(outputStream)
-        }
-        return ByteArrayInputStream(outputStream.toByteArray())
-    }
+    private fun byteArrayInputStream(fs: FileSystem, path: Path?): ByteArrayInputStream =
+            with (ByteArrayOutputStream()) {
+                fs.open(path).use { it.copyTo(this) }
+                ByteArrayInputStream(toByteArray())
+            }
 
     override fun nextKeyValue() = hasNext(input?.readLine())
 

@@ -2,7 +2,6 @@ package app.load.mapreduce
 
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
-import com.beust.klaxon.lookup
 import com.google.gson.Gson
 import uk.gov.dwp.dataworks.logging.DataworksLogger
 import java.nio.ByteBuffer
@@ -12,17 +11,13 @@ import java.util.zip.CRC32
 
 class MessageUtils {
     val logger = DataworksLogger.getLogger(MessageUtils::class.java.toString())
-    val typeDefault = "MONGO_IMPORT"
 
     fun parseGson(line: String): com.google.gson.JsonObject =
         Gson().fromJson(line, com.google.gson.JsonObject::class.java)
 
     @Throws(ParseException::class)
     fun getTimestampAsLong(timeStampAsStr: String?): Long {
-        val validTimestamps = listOf(
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-            "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZ"
-        )
+        val validTimestamps = listOf("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZ")
 
         validTimestamps.forEach {
             try {
@@ -36,23 +31,12 @@ class MessageUtils {
         throw ParseException("Unparseable date: '$timeStampAsStr'", 0)
     }
 
-    fun getType(json: JsonObject?): String {
-        val type = json?.lookup<String?>("message.@type")?.get(0)
-
-        if (type != null) {
-            return type
-        }
-
-        logger.warn("No @type in message so using default", "default_type" to typeDefault)
-        return typeDefault
-    }
-
     fun generateKeyFromRecordBody(body: JsonObject?): ByteArray {
         val id: JsonObject? = body?.let { getId(it) }
         return if (id == null) ByteArray(0) else generateKey(id)
     }
 
-    fun getId(json: JsonObject): JsonObject? {
+    private fun getId(json: JsonObject): JsonObject? {
         val message = json["message"]
         if (message != null && message is JsonObject) {
             val id = message["_id"]
@@ -93,29 +77,20 @@ class MessageUtils {
         return parser.parse(stringBuilder) as JsonObject
     }
 
-    fun generateKey(json: JsonObject): ByteArray {
+    private fun generateKey(json: JsonObject): ByteArray {
         val jsonOrdered = sortJsonByKey(json)
         val checksumBytes: ByteArray = generateFourByteChecksum(jsonOrdered)
 
         return checksumBytes.plus(jsonOrdered.toByteArray())
     }
 
-    fun sortJsonByKey(unsortedJson: JsonObject): String {
+    private fun sortJsonByKey(unsortedJson: JsonObject): String {
         val sortedEntries = unsortedJson.toSortedMap(compareBy { it })
         val json = JsonObject(sortedEntries)
         return json.toJsonString()
     }
 
-    fun sortJsonStringByKey(unsortedJson: String): String {
-        val parser: Parser = Parser.default()
-        val stringBuilder = StringBuilder(unsortedJson)
-        val jsonObject = parser.parse(stringBuilder) as JsonObject
-        val sortedEntries = jsonObject.toSortedMap(compareBy { it })
-        val jsonSorted: JsonObject = JsonObject(sortedEntries)
-        return jsonSorted.toJsonString()
-    }
-
-    fun generateFourByteChecksum(input: String): ByteArray {
+    private fun generateFourByteChecksum(input: String): ByteArray {
         val bytes = input.toByteArray()
         val checksum = CRC32()
 

@@ -1,6 +1,6 @@
 package app.load.services.impl
 
-import app.configuration.CipherInstanceProvider
+import app.load.providers.CipherInstanceProvider
 import app.load.domain.EncryptionResult
 import app.load.services.CipherService
 import org.apache.commons.compress.compressors.CompressorStreamFactory

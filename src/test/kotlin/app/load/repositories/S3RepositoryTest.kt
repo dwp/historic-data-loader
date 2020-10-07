@@ -1,7 +1,6 @@
 package app.load.repositories
 
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.GetObjectRequest
 import com.amazonaws.services.s3.model.ListObjectsV2Request
 import com.amazonaws.services.s3.model.ListObjectsV2Result
 import com.amazonaws.services.s3.model.S3ObjectSummary
@@ -74,7 +73,7 @@ class S3RepositoryTest: StringSpec() {
 
 
     private fun amazonS3(result: ListObjectsV2Result): AmazonS3 =
-        mock<AmazonS3> {
+        mock {
             on {
                 listObjectsV2(any<ListObjectsV2Request>())
             } doReturn result

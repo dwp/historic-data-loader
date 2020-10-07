@@ -38,7 +38,7 @@ class RetryServiceImpl(private val keyService: KeyService,
 
                 logger.warn("Failed to fetch datakey",
                         "attempt_number" to "${attempts + 1}",
-                        "max_attempts" to "${retryMaxAttempts}",
+                        "max_attempts" to "$retryMaxAttempts",
                         "retry_delay" to "$delay", "error_message" to "${e.message}")
                 Thread.sleep(delay)
                 exception = e

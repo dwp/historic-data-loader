@@ -244,15 +244,6 @@ class HttpKeyServiceTest: StringSpec() {
         }
 
     }
-
-
-    companion object {
-        private var dksCorrelationId = 0
-
-        private fun nextDksCorrelationId(): String {
-            return "dks-id-${++dksCorrelationId}"
-        }
-    }
 }
 
 //
