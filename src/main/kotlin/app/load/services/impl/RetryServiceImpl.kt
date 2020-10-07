@@ -1,7 +1,6 @@
 package app.load.services.impl
 
 import app.load.configurations.RetryConfiguration
-import app.load.domain.DataKeyResult
 import app.load.exceptions.DataKeyServiceUnavailableException
 import app.load.services.KeyService
 import app.load.services.RetryService
@@ -14,13 +13,13 @@ class RetryServiceImpl(private val keyService: KeyService,
 
 
     @Throws(DataKeyServiceUnavailableException::class)
-    override fun batchDataKey() = retry { keyService.batchDataKey() } as DataKeyResult
+    override fun batchDataKey() = retry { keyService.batchDataKey() }
 
     @Throws(DataKeyServiceUnavailableException::class)
     override fun decryptKey(encryptionKeyId: String, encryptedKey: String) =
-            retry { keyService.decryptKey(encryptionKeyId, encryptedKey) } as String
+            retry { keyService.decryptKey(encryptionKeyId, encryptedKey) }
 
-    private fun retry(func: () -> Any): Any {
+    private fun <T> retry(func: () -> T): T {
 
         var success = false
         var attempts = 0
@@ -53,7 +52,8 @@ class RetryServiceImpl(private val keyService: KeyService,
             }
         }
 
-        return result!!
+        @Suppress("UNCHECKED_CAST")
+        return result!! as T
     }
 
     companion object {
