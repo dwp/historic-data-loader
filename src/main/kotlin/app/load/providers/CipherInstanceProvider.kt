@@ -1,4 +1,4 @@
-package app.configuration
+package app.load.providers
 
 import javax.crypto.Cipher
 

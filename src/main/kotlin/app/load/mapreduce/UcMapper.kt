@@ -31,7 +31,7 @@ class UcMapper(): Mapper<LongWritable, Text, ImmutableBytesWritable, KeyValue>()
                 context.write(hkey, keyValue(hkey, version, Bytes.toBytes(message)))
             }
             else {
-                logger.debug("Filtering record", "id" to "${String(id)}", "version" to "$version",
+                logger.debug("Filtering record", "id" to String(id), "version" to "$version",
                         "status" to "$filterStatus")
             }
         } catch (e: Exception) {
