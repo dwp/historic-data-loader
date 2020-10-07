@@ -1,28 +1,35 @@
-package app.load.mapreduce
+package app.load.services.impl
 
 import app.load.configurations.RetryConfiguration
 import app.load.domain.DataKeyResult
 import app.load.exceptions.DataKeyServiceUnavailableException
 import app.load.services.KeyService
-import app.load.services.impl.HttpKeyService
+import app.load.services.RetryService
 import uk.gov.dwp.dataworks.logging.DataworksLogger
 
-class RetryUtilityImpl(private val keyService: KeyService,
+class RetryServiceImpl(private val keyService: KeyService,
                        private val retryMaxAttempts: Int,
                        private val retryInitialBackoff: Long,
-                       private val retryBackoffMultiplier: Long) : RetryUtility {
+                       private val retryBackoffMultiplier: Long) : RetryService {
+
 
     @Throws(DataKeyServiceUnavailableException::class)
-    override fun batchDataKey(): DataKeyResult {
+    override fun batchDataKey() = retry { keyService.batchDataKey() } as DataKeyResult
+
+    @Throws(DataKeyServiceUnavailableException::class)
+    override fun decryptKey(encryptionKeyId: String, encryptedKey: String) =
+            retry { keyService.decryptKey(encryptionKeyId, encryptedKey) } as String
+
+    private fun retry(func: () -> Any): Any {
 
         var success = false
         var attempts = 0
         var exception: Exception? = null
-        var result: DataKeyResult? = null
+        var result: Any? = null
 
         while (!success && attempts < retryMaxAttempts) {
             try {
-                result = keyService.batchDataKey()
+                result = func()
                 success = true
             } catch (e: Exception) {
 
@@ -49,15 +56,10 @@ class RetryUtilityImpl(private val keyService: KeyService,
         return result!!
     }
 
-//    @Throws(DataKeyServiceUnavailableException::class)
-//    fun decryptKey(encryptionKeyId: String, encryptedKey: String): String
-//    }
-
     companion object {
-        private val logger = DataworksLogger.getLogger(RetryUtilityImpl::class.java.toString())
-
+        private val logger = DataworksLogger.getLogger(RetryServiceImpl::class.java.toString())
         fun connect()=
-            RetryUtilityImpl(HttpKeyService.connect(),
+            RetryServiceImpl(HttpKeyService.connect(),
                     RetryConfiguration.retryMaxAttempts,
                     RetryConfiguration.retryInitialBackoff,
                     RetryConfiguration.retryBackoffMultiplier)

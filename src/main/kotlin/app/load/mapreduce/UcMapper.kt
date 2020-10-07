@@ -2,8 +2,10 @@ package app.load.mapreduce
 
 import app.load.domain.DataKeyResult
 import app.load.services.FilterService
+import app.load.services.RetryService
 import app.load.services.impl.AESCipherService
 import app.load.services.impl.FilterServiceImpl
+import app.load.services.impl.RetryServiceImpl
 import com.google.gson.GsonBuilder
 import org.apache.hadoop.hbase.KeyValue
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
@@ -15,9 +17,9 @@ import uk.gov.dwp.dataworks.logging.DataworksLogger
 
 class UcMapper(): Mapper<LongWritable, Text, ImmutableBytesWritable, KeyValue>() {
 
-    constructor(utility: MapUtility, retrier: RetryUtility): this() {
+    constructor(utility: MapUtility, retrier: RetryService): this() {
         mapUtility = utility
-        retryUtility = retrier
+        retryService = retrier
     }
 
     public override fun map(key: LongWritable, value: Text, context: Context) {
@@ -44,13 +46,13 @@ class UcMapper(): Mapper<LongWritable, Text, ImmutableBytesWritable, KeyValue>()
     private fun bytes(value: Text): ByteArray = value.bytes.sliceArray(0 until value.length)
 
     private val dataKeyResult: DataKeyResult by lazy {
-        retryUtility.batchDataKey()
+        retryService.batchDataKey()
     }
 
     companion object {
         private val logger = DataworksLogger.getLogger(UcMapper::class.java.toString())
         private var mapUtility: MapUtility = MapUtilityImpl(AESCipherService.connect(), FilterServiceImpl.connect())
-        private var retryUtility: RetryUtility = RetryUtilityImpl.connect()
+        private var retryService: RetryService = RetryServiceImpl.connect()
         private val gson = GsonBuilder().serializeNulls().create()
         private val columnFamily by lazy { Bytes.toBytes("cf") }
         private val columnQualifier by lazy { Bytes.toBytes("record") }
