@@ -48,3 +48,4 @@ venv/
 env/
 tmp/
 test-results/*
+ephemera/
