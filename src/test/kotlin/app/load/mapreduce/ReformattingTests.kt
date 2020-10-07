@@ -8,7 +8,7 @@ import io.kotest.matchers.shouldBe
 class ReformattingTests: StringSpec() {
     init {
         "testReformatNonRemovedReturnsUnmodifiedRecordWhenNoRemovedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789" }""".trimIndent()
             val recordWithRemovedElement = """{ "_notRemoved": $innerRecord }"""
             val (actual, wasChanged) = mapUtility.reformatRemoved(Gson(), recordWithRemovedElement)
@@ -18,7 +18,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatRemovedReturnsInnerRecordWhenRemovedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789" }""".trimIndent()
             val recordWithRemovedElement = """{ "_removed": $innerRecord }"""
             val (actual, wasChanged) = mapUtility.reformatRemoved(Gson(), recordWithRemovedElement)
@@ -29,7 +29,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatRemovedOverwritesTypeAttribute" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789", "@type": "MONGO_INSERT" }"""
             val recordWithRemovedElement = """{ "_removed": $innerRecord }"""
             val (actual, wasChanged) = mapUtility.reformatRemoved(Gson(), recordWithRemovedElement)
@@ -39,7 +39,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatRemovedReturnsOuterRecordWhenRemovedElementDoesNotExist" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val outerRecord = """{ "_id": "123456789" }""".trimIndent()
             val (actual, wasChanged) = mapUtility.reformatRemoved(Gson(), outerRecord)
             val expected = Gson().fromJson(outerRecord, com.google.gson.JsonObject::class.java)
@@ -48,7 +48,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatTransplantsLastModifiedWhenRemovedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789" }""".trimIndent()
             val innerRecordWithTimestamp = """{ "_id": "123456789", "_lastModifiedDateTime": "OUTER_LAST_MODIFIED" }""".trimIndent()
             val recordWithRemovedElement = """{ "_removed": $innerRecord, "_lastModifiedDateTime": "OUTER_LAST_MODIFIED" }"""
@@ -60,7 +60,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatReplacesLastModifiedWhenRemovedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789", "_lastModifiedDateTime": "INNER_LAST_MODIFIED" }""".trimIndent()
             val innerRecordWithTimestamp = """{ "_id": "123456789", "_lastModifiedDateTime": "OUTER_LAST_MODIFIED" }""".trimIndent()
             val recordWithRemovedElement = """{ "_removed": $innerRecord, "_lastModifiedDateTime": "OUTER_LAST_MODIFIED" }"""
@@ -72,7 +72,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatTransplantsRemovedTimeWhenRemovedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789" }""".trimIndent()
             val innerRecordWithTimestamp = """{ "_id": "123456789", "_removedDateTime": "OUTER_REMOVED_TIME" }""".trimIndent()
             val recordWithRemovedElement = """{ "_removed": $innerRecord, "_removedDateTime": "OUTER_REMOVED_TIME" }"""
@@ -84,7 +84,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatReplacesRemovedTimeWhenRemovedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789", "_removedDateTime": "INNER_REMOVED_TIME" }""".trimIndent()
             val innerRecordWithTimestamp = """{ "_id": "123456789", "_removedDateTime": "OUTER_REMOVED_TIME" }""".trimIndent()
             val recordWithRemovedElement = """{ "_removed": $innerRecord, "_removedDateTime": "OUTER_REMOVED_TIME" }"""
@@ -96,7 +96,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatTransplantsTimestampWhenRemovedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789" }""".trimIndent()
             val innerRecordWithTimestamp = """{ "_id": "123456789", "timestamp": "OUTER_TIMESTAMP" }""".trimIndent()
             val recordWithRemovedElement = """{ "_removed": $innerRecord, "timestamp": "OUTER_TIMESTAMP" }"""
@@ -108,7 +108,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatReplacesTimestampWhenRemovedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789", "timestamp": "INNER_TIMESTAMP" }""".trimIndent()
             val innerRecordWithTimestamp = """{ "_id": "123456789", "timestamp": "OUTER_TIMESTAMP" }""".trimIndent()
             val recordWithRemovedElement = """{ "_removed": $innerRecord, "timestamp": "OUTER_TIMESTAMP" }"""
@@ -120,7 +120,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatNonArchivedReturnsUnmodifiedRecordWhenNoArchivedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789" }""".trimIndent()
             val recordWithArchivedElement = """{ "_notArchived": $innerRecord }"""
             val json = Gson().fromJson(recordWithArchivedElement, com.google.gson.JsonObject::class.java)
@@ -131,7 +131,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatArchivedReturnsInnerRecordWhenArchivedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789" }""".trimIndent()
             val recordWithArchivedElement = """{ "_archived": $innerRecord }"""
             val json = Gson().fromJson(recordWithArchivedElement, com.google.gson.JsonObject::class.java)
@@ -143,7 +143,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatArchivedOverwritesTypeAttribute" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789", "@type": "MONGO_INSERT" }"""
             val recordWithArchivedElement = """{ "_archived": $innerRecord }"""
             val json = Gson().fromJson(recordWithArchivedElement, com.google.gson.JsonObject::class.java)
@@ -154,7 +154,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatArchivedReturnsOuterRecordWhenArchivedElementDoesNotExist" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val outerRecord = """{ "_id": "123456789" }""".trimIndent()
             val json = Gson().fromJson(outerRecord, com.google.gson.JsonObject::class.java)
             val (actual, wasChanged) = mapUtility.reformatArchived(Gson(), json)
@@ -164,7 +164,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatTransplantsLastModifiedWhenArchivedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789" }""".trimIndent()
             val innerRecordWithTimestamp = """{ "_id": "123456789", "_lastModifiedDateTime": "OUTER_LAST_MODIFIED" }""".trimIndent()
             val recordWithArchivedElement = """{ "_archived": $innerRecord, "_lastModifiedDateTime": "OUTER_LAST_MODIFIED" }"""
@@ -177,7 +177,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatReplacesLastModifiedWhenArchivedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789", "_lastModifiedDateTime": "INNER_LAST_MODIFIED" }""".trimIndent()
             val innerRecordWithTimestamp = """{ "_id": "123456789", "_lastModifiedDateTime": "OUTER_LAST_MODIFIED" }""".trimIndent()
             val recordWithArchivedElement = """{ "_archived": $innerRecord, "_lastModifiedDateTime": "OUTER_LAST_MODIFIED" }"""
@@ -190,7 +190,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatTransplantsTimestampWhenArchivedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789" }""".trimIndent()
             val innerRecordWithTimestamp = """{ "_id": "123456789", "timestamp": "OUTER_TIMESTAMP" }""".trimIndent()
             val recordWithArchivedElement = """{ "_archived": $innerRecord, "timestamp": "OUTER_TIMESTAMP" }"""
@@ -203,7 +203,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatReplacesTimestampWhenArchivedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789", "timestamp": "INNER_TIMESTAMP" }""".trimIndent()
             val innerRecordWithTimestamp = """{ "_id": "123456789", "timestamp": "OUTER_TIMESTAMP" }""".trimIndent()
             val recordWithArchivedElement = """{ "_archived": $innerRecord, "timestamp": "OUTER_TIMESTAMP" }"""
@@ -216,7 +216,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatTransplantsArchivedTimeWhenArchivedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789" }""".trimIndent()
             val innerRecordWithTimestamp = """{ "_id": "123456789", "_archivedDateTime": "OUTER_ARCHIVED_TIME" }""".trimIndent()
             val recordWithArchivedElement = """{ "_archived": $innerRecord, "_archivedDateTime": "OUTER_ARCHIVED_TIME" }"""
@@ -229,7 +229,7 @@ class ReformattingTests: StringSpec() {
         }
 
         "testReformatReplacesArchivedTimeWhenArchivedElementExists" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val innerRecord = """{ "_id": "123456789", "_archivedDateTime": "INNER_ARCHIVED_TIME" }""".trimIndent()
             val innerRecordWithTimestamp = """{ "_id": "123456789", "_archivedDateTime": "OUTER_ARCHIVED_TIME" }""".trimIndent()
             val recordWithArchivedElement = """{ "_archived": $innerRecord, "_archivedDateTime": "OUTER_ARCHIVED_TIME" }"""

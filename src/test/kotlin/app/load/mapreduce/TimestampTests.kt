@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat
 class TimestampTests: StringSpec() {
     init {
         "testHasDateFieldOnPresenceOfMongoStyleDateField" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val dateField = "\$date"
             val id = Gson().fromJson("""
                 {
@@ -25,7 +25,7 @@ class TimestampTests: StringSpec() {
         }
 
         "Should_Parse_Valid_Incoming_Date_Format" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val dateOne = "2019-12-14T15:01:02.000+0000"
             val df = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZZZ")
             val expected = df.parse(dateOne)
@@ -34,7 +34,7 @@ class TimestampTests: StringSpec() {
         }
 
         "Should_Parse_Valid_Outgoing_Date_Format" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val dateOne = "2019-12-14T15:01:02.000Z"
             val df = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
             val expected = df.parse(dateOne)
@@ -43,7 +43,7 @@ class TimestampTests: StringSpec() {
         }
 
         "shouldAcceptNonUtcPositiveOffsetTimeAndReturnAsUtc" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val date = "2020-05-12T10:01:02.000+0100"
             val actual = mapUtility.kafkaDateFormat(date)
             val expected = "2020-05-12T09:01:02.000+0000"
@@ -51,7 +51,7 @@ class TimestampTests: StringSpec() {
         }
 
         "shouldAcceptNonUtcNegativeOffsetTimeAndReturnAsUtc" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val date = "2020-05-12T10:01:02.000-0100"
             val actual = mapUtility.kafkaDateFormat(date)
             val expected = "2020-05-12T11:01:02.000+0000"
@@ -59,7 +59,7 @@ class TimestampTests: StringSpec() {
         }
 
         "shouldAcceptUtcTimeAndReturnAsUtc" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val date = "2020-05-12T10:01:02.000+0000"
             val actual = mapUtility.kafkaDateFormat(date)
             val expected = "2020-05-12T10:01:02.000+0000"
@@ -67,7 +67,7 @@ class TimestampTests: StringSpec() {
         }
 
         "shouldAcceptNonUtcTimeAndReturnAsUtc" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val date = "2020-05-12T10:01:02.000+0100"
             val actual = mapUtility.kafkaDateFormat(date)
             val expected = "2020-05-12T09:01:02.000+0000"
@@ -75,7 +75,7 @@ class TimestampTests: StringSpec() {
         }
 
         "Should_Throw_Error_With_Invalid_Date_Format" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val exception = shouldThrow<Exception> {
                 mapUtility.getValidParsedDateTime("2019-12-14T15:01:02")
             }
@@ -83,7 +83,7 @@ class TimestampTests: StringSpec() {
         }
 
         "testHasDateFieldReturnsFalseOnPresenceOfNonMongoStyleDateFieldWithExtraField" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val dateField = "\$date"
             val id = Gson().fromJson("""
                 {
@@ -98,7 +98,7 @@ class TimestampTests: StringSpec() {
         }
 
         "testHasDateFieldReturnsFalseOnPresenceOfNonMongoStyleDateObjectField" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val id = Gson().fromJson("""
                 {
                     "id": "ID",
@@ -111,7 +111,7 @@ class TimestampTests: StringSpec() {
         }
 
         "testHasDateFieldReturnsFalseOnPresenceOfStringStyleDateField" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val id = Gson().fromJson("""
                 {
                     "id": "ID",
@@ -122,7 +122,7 @@ class TimestampTests: StringSpec() {
         }
 
         "testHasDateFieldReturnsFalseOnAbsenceOfDateField" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val id = Gson().fromJson("""
                 {
                     "id": "ID"
@@ -132,7 +132,7 @@ class TimestampTests: StringSpec() {
         }
 
         "testLastModifiedDateTimeAsNonDateObjectReturnedAsCreated" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val lastModified = com.google.gson.JsonObject()
             val lastModifiedValue = "testDateField"
             lastModified.addProperty("\$notDate", lastModifiedValue)
@@ -142,7 +142,7 @@ class TimestampTests: StringSpec() {
         }
 
         "testLastModifiedDateTimeAsDateObjectInDumpFormatReturnedAsDateFieldValueInKafkaFormat" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val lastModified = com.google.gson.JsonObject()
             val lastModifiedValue = "2019-08-05T02:10:19.887Z"
             lastModified.addProperty("\$date", lastModifiedValue)
@@ -152,7 +152,7 @@ class TimestampTests: StringSpec() {
         }
 
         "testLastModifiedDateTimeAsDateObjectInKafkaFormatReturnedAsDateFieldValueInKafkaFormat" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val lastModified = com.google.gson.JsonObject()
             val lastModifiedValue = "2019-08-05T02:10:19.887+0000"
             lastModified.addProperty("\$date", lastModifiedValue)
@@ -162,7 +162,7 @@ class TimestampTests: StringSpec() {
         }
 
         "testLastModifiedDateTimeAsStringReturnedAsValue" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val lastModified = JsonPrimitive("testDateString")
             val actual = mapUtility.lastModifiedDateTime(lastModified, "CREATED_TIMESTAMP")
             val expected = Pair("testDateString", "_lastModifiedDateTime")
@@ -170,17 +170,17 @@ class TimestampTests: StringSpec() {
         }
 
         "testLastModifiedDateTimeArrayReturnedAsCreatedWhenCreatedNotBlank" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val arrayValue = com.google.gson.JsonArray()
             arrayValue.add("1")
             arrayValue.add("2")
             val actual = mapUtility.lastModifiedDateTime(arrayValue, "")
-            val expected = Pair(MapUtility.EPOCH, "epoch")
+            val expected = Pair(MapUtilityImpl.EPOCH, "epoch")
             actual shouldBe expected
         }
 
         "testLastModifiedDateTimeNullReturnedAsCreatedWhenCreatedNotBlank" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val nullValue = com.google.gson.JsonNull.INSTANCE
             val actual = mapUtility.lastModifiedDateTime(nullValue, "CREATED_TIMESTAMP")
             val expected = Pair("CREATED_TIMESTAMP", "createdDateTime")
@@ -188,15 +188,15 @@ class TimestampTests: StringSpec() {
         }
 
         "testLastModifiedDateTimeNullReturnedAsEpochWhenCreatedBlank" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val nullValue = com.google.gson.JsonNull.INSTANCE
             val actual = mapUtility.lastModifiedDateTime(nullValue, "")
-            val expected = Pair(MapUtility.EPOCH, "epoch")
+            val expected = Pair(MapUtilityImpl.EPOCH, "epoch")
             actual shouldBe expected
         }
 
         "testAbsentOptionalDateTimeAsObjectReturnedAsBlank" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val message = com.google.gson.JsonObject()
             val fieldName = "_optionalDateTime"
             message.addProperty("otherProperty", "123")
@@ -206,7 +206,7 @@ class TimestampTests: StringSpec() {
         }
 
         "testOptionalDateTimeInDumpFormatReturnedAsStringInKafkaFormat" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val optionalDateTimeField = com.google.gson.JsonObject()
             val optionalDateTimeValue = "2019-08-05T02:10:19.887Z"
             optionalDateTimeField.addProperty("\$date", optionalDateTimeValue)
@@ -219,7 +219,7 @@ class TimestampTests: StringSpec() {
         }
 
         "testOptionalDateTimeInKafkaFormatReturnedAsStringInKafkaFormat" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val optionalDateTimeField = com.google.gson.JsonObject()
             val optionalDateTimeValue = "2019-08-05T02:10:19.887+0000"
             optionalDateTimeField.addProperty("\$date", optionalDateTimeValue)
@@ -232,7 +232,7 @@ class TimestampTests: StringSpec() {
         }
 
         "testOptionalDateTimeAsStringReturnedAsString" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val optionalDateTimeValue = "DATE_FIELD_VALUE"
             val message = com.google.gson.JsonObject()
             val fieldName = "_optionalDateTime"
@@ -243,7 +243,7 @@ class TimestampTests: StringSpec() {
         }
 
         "testInvalidOptionalDateTimeAsObjectReturnedAsBlank" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val optionalDateTimeField = com.google.gson.JsonObject()
             val optionalDateTimeValue = "DATE_FIELD_VALUE"
             optionalDateTimeField.addProperty("\$invalidProperty", optionalDateTimeValue)

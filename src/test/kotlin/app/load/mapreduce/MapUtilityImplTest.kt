@@ -3,6 +3,7 @@ package app.load.mapreduce
 import app.load.domain.DataKeyResult
 import app.load.domain.EncryptionResult
 import app.load.services.CipherService
+import app.load.services.FilterService
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonPrimitive
@@ -10,7 +11,7 @@ import com.nhaarman.mockitokotlin2.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
-class MapUtilityTest: StringSpec() {
+class MapUtilityImplTest: StringSpec() {
     init {
         "Object is updated prior to encryption" {
             val date = "\$date"
@@ -38,7 +39,11 @@ class MapUtilityTest: StringSpec() {
                 on { encrypt(any(), any()) } doReturn encryptionResult
             }
 
-            val mapUtility = MapUtility(cipherService)
+            val filterService = mock<FilterService> {
+                on { filterStatus(any())} doReturn FilterService.FilterStatus.DoNotFilter
+            }
+
+            val mapUtility = MapUtilityImpl(cipherService, filterService)
 
             mapUtility.mappedRecord(gson, dataKeyResult, dumpLine)
             val dataKeyCaptor = argumentCaptor<String>()
@@ -54,113 +59,115 @@ class MapUtilityTest: StringSpec() {
                 |    "_lastModifiedDateTime": "2010-01-01T00:00:00.000+0000"
                 |}""".trimMargin()
 
-            Gson().fromJson(String(lineCaptor.firstValue), com.google.gson.JsonObject::class.java) shouldBe Gson().fromJson(expectedArgumentJson, com.google.gson.JsonObject::class.java)
+            Gson().fromJson(String(lineCaptor.firstValue), com.google.gson.JsonObject::class.java) shouldBe
+                    Gson().fromJson(expectedArgumentJson, com.google.gson.JsonObject::class.java)
 
         }
 
         "Id object returned as object" {
             val cipherService = mock<CipherService>()
-            val mapUtility = MapUtility(cipherService)
+            val filterService = mock<FilterService>()
+            val mapUtility = MapUtilityImpl(cipherService, filterService)
             val id = com.google.gson.JsonObject()
             id.addProperty("key", "value")
             val expectedId = Gson().toJson(id)
             val (actualId, actualModified) = mapUtility.normalisedId(Gson(), id)
             expectedId shouldBe actualId
-            actualModified shouldBe MapUtility.Companion.IdModification.UnmodifiedObjectId
+            actualModified shouldBe MapUtilityImpl.Companion.IdModification.UnmodifiedObjectId
         }
 
         "testIdObjectWithInnerCreatedDateInKafkaFormatReturnedAsObjectWithFlattenedDateInKafkaFormat" {
-            testIdObjectWithInnerDateInKafkaFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtility.CREATED_DATE_TIME_FIELD)
+            testIdObjectWithInnerDateInKafkaFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtilityImpl.CREATED_DATE_TIME_FIELD)
         }
 
         "testIdObjectWithInnerModifiedDateInKafkaFormatReturnedAsObjectWithFlattenedDateInKafkaFormat" {
-            testIdObjectWithInnerDateInKafkaFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtility.LAST_MODIFIED_DATE_TIME_FIELD)
+            testIdObjectWithInnerDateInKafkaFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtilityImpl.LAST_MODIFIED_DATE_TIME_FIELD)
         }
 
         "testIdObjectWithInnerRemovedDateInKafkaFormatReturnedAsObjectWithFlattenedDateInKafkaFormat" {
-            testIdObjectWithInnerDateInKafkaFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtility.REMOVED_DATE_TIME_FIELD)
+            testIdObjectWithInnerDateInKafkaFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtilityImpl.REMOVED_DATE_TIME_FIELD)
         }
 
         "testIdObjectWithInnerArchivedDateInKafkaFormatReturnedAsObjectWithFlattenedDateInKafkaFormat" {
-            testIdObjectWithInnerDateInKafkaFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtility.ARCHIVED_DATE_TIME_FIELD)
+            testIdObjectWithInnerDateInKafkaFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtilityImpl.ARCHIVED_DATE_TIME_FIELD)
         }
 
         "testIdObjectWithInnerCreatedDateInDumpFormatReturnedAsObjectWithFlattenedDateInKafkaFormat" {
-            testIdObjectWithInnerDateInDumpFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtility.CREATED_DATE_TIME_FIELD)
+            testIdObjectWithInnerDateInDumpFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtilityImpl.CREATED_DATE_TIME_FIELD)
         }
 
         "testIdObjectWithInnerModifiedDateInDumpFormatReturnedAsObjectWithFlattenedDateInKafkaFormat" {
-            testIdObjectWithInnerDateInDumpFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtility.LAST_MODIFIED_DATE_TIME_FIELD)
+            testIdObjectWithInnerDateInDumpFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtilityImpl.LAST_MODIFIED_DATE_TIME_FIELD)
         }
 
         "testIdObjectWithInnerRemovedDateInDumpFormatReturnedAsObjectWithFlattenedDateInKafkaFormat" {
-            testIdObjectWithInnerDateInDumpFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtility.REMOVED_DATE_TIME_FIELD)
+            testIdObjectWithInnerDateInDumpFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtilityImpl.REMOVED_DATE_TIME_FIELD)
         }
 
         "testIdObjectWithInnerArchivedDateInDumpFormatReturnedAsObjectWithFlattenedDateInKafkaFormat" {
-            testIdObjectWithInnerDateInDumpFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtility.ARCHIVED_DATE_TIME_FIELD)
+            testIdObjectWithInnerDateInDumpFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(MapUtilityImpl.ARCHIVED_DATE_TIME_FIELD)
         }
 
         "testIdObjectWithInnerCreatedDateStringReturnedUnchanged" {
-            testIdObjectWithInnerDateStringReturnedUnchanged(MapUtility.CREATED_DATE_TIME_FIELD)
+            testIdObjectWithInnerDateStringReturnedUnchanged(MapUtilityImpl.CREATED_DATE_TIME_FIELD)
         }
 
         "testIdObjectWithInnerModifiedDateStringReturnedUnchanged" {
-            testIdObjectWithInnerDateStringReturnedUnchanged(MapUtility.LAST_MODIFIED_DATE_TIME_FIELD)
+            testIdObjectWithInnerDateStringReturnedUnchanged(MapUtilityImpl.LAST_MODIFIED_DATE_TIME_FIELD)
         }
 
         "testIdObjectWithInnerRemovedDateStringReturnedUnchanged" {
-            testIdObjectWithInnerDateStringReturnedUnchanged(MapUtility.REMOVED_DATE_TIME_FIELD)
+            testIdObjectWithInnerDateStringReturnedUnchanged(MapUtilityImpl.REMOVED_DATE_TIME_FIELD)
         }
 
         "testIdObjectWithInnerArchivedDateStringReturnedUnchanged" {
-            testIdObjectWithInnerDateStringReturnedUnchanged(MapUtility.ARCHIVED_DATE_TIME_FIELD)
+            testIdObjectWithInnerDateStringReturnedUnchanged(MapUtilityImpl.ARCHIVED_DATE_TIME_FIELD)
         }
 
         "testIdStringReturnedAsString" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val id = JsonPrimitive("id")
             val actual = mapUtility.normalisedId(Gson(), id)
-            actual shouldBe Pair("id", MapUtility.Companion.IdModification.UnmodifiedStringId)
+            actual shouldBe Pair("id", MapUtilityImpl.Companion.IdModification.UnmodifiedStringId)
         }
 
         "testMongoIdStringReturnedAsString" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val oid = com.google.gson.JsonObject()
             val oidValue = "OID_VALUE"
             oid.addProperty("\$oid", oidValue)
             val actual = mapUtility.normalisedId(Gson(), oid)
-            actual shouldBe Pair(oidValue, MapUtility.Companion.IdModification.FlattenedMongoId)
+            actual shouldBe Pair(oidValue, MapUtilityImpl.Companion.IdModification.FlattenedMongoId)
         }
 
         "testIdNumberReturnedAsObject" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val id = JsonPrimitive( 12345)
             val actual = mapUtility.normalisedId(Gson(), id)
             val expectedId = "12345"
-            actual shouldBe Pair(expectedId, MapUtility.Companion.IdModification.UnmodifiedStringId)
+            actual shouldBe Pair(expectedId, MapUtilityImpl.Companion.IdModification.UnmodifiedStringId)
         }
 
         "testIdArrayReturnedAsNull" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val arrayValue = com.google.gson.JsonArray()
             arrayValue.add("1")
             arrayValue.add("2")
             val actual = mapUtility.normalisedId(Gson(), arrayValue)
-            val expected = Pair("", MapUtility.Companion.IdModification.InvalidId)
+            val expected = Pair("", MapUtilityImpl.Companion.IdModification.InvalidId)
             actual shouldBe expected
         }
 
         "testIdNullReturnedAsEmpty" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val nullValue = com.google.gson.JsonNull.INSTANCE
             val actual = mapUtility.normalisedId(Gson(), nullValue)
-            val expected = Pair("", MapUtility.Companion.IdModification.InvalidId)
+            val expected = Pair("", MapUtilityImpl.Companion.IdModification.InvalidId)
             actual shouldBe expected
         }
 
         "testOverwriteFieldValueOverwritesCorrectValue" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val id = "OID_WRENCHED_FROM_MONGO_ID"
             val lastModifiedDateTime = "DATETIME_WRENCHED_FROM_MONGO_ID"
             val lastModifiedDateTimeNew = "NEW_DATETIME"
@@ -177,7 +184,7 @@ class MapUtilityTest: StringSpec() {
         }
 
         "testOverwriteFieldWithObjectOverwritesCorrectValue" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val id = Gson().fromJson("""{
             |    "key1": "val1",
             |    "key2": "val2"
@@ -203,7 +210,7 @@ class MapUtilityTest: StringSpec() {
         }
 
         "testCopyWhenFieldExistsInSourceButNotTarget" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val sourceRecord = Gson().fromJson("""{ "SOURCE_KEY": "SOURCE_VALUE" }""", com.google.gson.JsonObject::class.java)
             val targetRecord = Gson().fromJson("""{ "TARGET_KEY": "TARGET_VALUE" }""", com.google.gson.JsonObject::class.java)
             val expected = Gson().fromJson("""{ "SOURCE_KEY": "SOURCE_VALUE", "TARGET_KEY": "TARGET_VALUE" }""", com.google.gson.JsonObject::class.java)
@@ -212,7 +219,7 @@ class MapUtilityTest: StringSpec() {
         }
 
         "testCopyWhenFieldExistsInSourceAndTarget" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val sourceRecord = Gson().fromJson("""{ "SHARED_KEY": "SOURCE_VALUE" }""", com.google.gson.JsonObject::class.java)
             val targetRecord = Gson().fromJson("""{ "SHARED_KEY": "TARGET_VALUE" }""", com.google.gson.JsonObject::class.java)
             val expected = Gson().fromJson("""{ "SHARED_KEY": "SOURCE_VALUE" }""", com.google.gson.JsonObject::class.java)
@@ -221,7 +228,7 @@ class MapUtilityTest: StringSpec() {
         }
 
         "testCopyWhenFieldNotInSource" {
-            val mapUtility = MapUtility(mock())
+            val mapUtility = MapUtilityImpl(mock(), mock())
             val sourceRecord = Gson().fromJson("""{ "SOURCE_KEY": "SOURCE_VALUE" }""", com.google.gson.JsonObject::class.java)
             val targetRecord = Gson().fromJson("""{ "TARGET_KEY": "TARGET_VALUE" }""", com.google.gson.JsonObject::class.java)
             val expected = Gson().fromJson("""{ "TARGET_KEY": "TARGET_VALUE" }""", com.google.gson.JsonObject::class.java)
@@ -232,7 +239,7 @@ class MapUtilityTest: StringSpec() {
     }
 
     private fun testIdObjectWithInnerDateInKafkaFormatReturnedAsObjectWithFlattenedDateInKafkaFormat(dateField: String) {
-        val mapUtility = MapUtility(mock())
+        val mapUtility = MapUtilityImpl(mock(), mock())
         val dateInnerField = "\$date"
 
         val id = """
@@ -256,7 +263,7 @@ class MapUtilityTest: StringSpec() {
         """.trimIndent()
 
         actualId shouldBe Gson().fromJson(expectedId, com.google.gson.JsonObject::class.java).toString()
-        actualModified shouldBe MapUtility.Companion.IdModification.FlattenedInnerDate
+        actualModified shouldBe MapUtilityImpl.Companion.IdModification.FlattenedInnerDate
         copyOfOriginalId shouldBe originalId
     }
 
@@ -272,7 +279,7 @@ class MapUtilityTest: StringSpec() {
             }
         """.trimIndent()
 
-        val mapUtility = MapUtility(mock())
+        val mapUtility = MapUtilityImpl(mock(), mock())
         val (actualId, actualModified) =
                 mapUtility.normalisedId(Gson(), Gson().fromJson(id, com.google.gson.JsonObject::class.java))
 
@@ -284,11 +291,11 @@ class MapUtilityTest: StringSpec() {
         """.trimIndent()
 
         actualId shouldBe Gson().fromJson(expectedId, com.google.gson.JsonObject::class.java).toString()
-        actualModified shouldBe MapUtility.Companion.IdModification.FlattenedInnerDate
+        actualModified shouldBe MapUtilityImpl.Companion.IdModification.FlattenedInnerDate
     }
 
     private fun testIdObjectWithInnerDateStringReturnedUnchanged(dateField: String) {
-        val mapUtility = MapUtility(mock())
+        val mapUtility = MapUtilityImpl(mock(), mock())
         val id = """
             {
                 "id": "ID",
@@ -300,111 +307,7 @@ class MapUtilityTest: StringSpec() {
                 mapUtility.normalisedId(Gson(), Gson().fromJson(id, com.google.gson.JsonObject::class.java))
 
         actualId shouldBe Gson().fromJson(id, com.google.gson.JsonObject::class.java).toString()
-        actualModified shouldBe  MapUtility.Companion.IdModification.UnmodifiedObjectId
+        actualModified shouldBe  MapUtilityImpl.Companion.IdModification.UnmodifiedObjectId
     }
 
 }
-
-
-// TODO: UCMapperTest and RecordReader test
-//    @Test
-//"Logs error for invalid json" {
-//    val root = LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger
-//    val mockAppender: Appender<ILoggingEvent> = mock()
-//    root.addAppender(mockAppender)
-//    val dataKeyResult = DataKeyResult("dataKeyEncryptionKeyId", "plaintextDataKey", "ciphertextDataKey")
-//    val encryptionResult = EncryptionResult("initialisationVector", "encrypted")
-//
-//    val cipherService = mock<CipherService> {
-//        on { encrypt(any(), any())} doReturn encryptionResult
-//    }
-//
-//    val invalidJson2 = """{"_id":{"declarationId":"87a4fad9-49af-4cb2-91b0-0056e2ac0eef"},"type":"addressDeclaration"""
-//
-//    val mapUtility = MapUtility(cipherService)
-//    val gson = GsonBuilder().serializeNulls().create()
-//
-//    mapUtility.mappedRecord(gson, dataKeyResult, invalidJson2)
-//    val captor = argumentCaptor<ILoggingEvent>()
-//    verify(mockAppender, times(6)).doAppend(captor.capture())
-//    val formattedMessages = captor.allValues.map { it.formattedMessage }
-//    formattedMessages.contains("Error processing record\", \"line_number\":\"1\", \"file_name\":\"adb.collection.0001.json.gz.enc\", \"error_message\":\"parse error") shouldBe true
-//}
-//
-//    @Test
-//    fun should_Log_Error_For_Json_Without_Id() {
-//
-//        val root = LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger
-//        val mockAppender: Appender<ILoggingEvent> = mock()
-//        root.addAppender(mockAppender)
-//
-//        val dataKeyResult = DataKeyResult("", "", "")
-//        whenever(keyService.batchDataKey()).thenReturn(dataKeyResult)
-//        val encryptionResult = EncryptionResult("", "")
-//        whenever(cipherService.encrypt(any(), any())).thenReturn(encryptionResult)
-//
-//        whenever(messageUtils.parseGson(invalidJson2)).thenThrow(RuntimeException("parse error"))
-//        val jsonObject = JsonObject()
-//        whenever(messageUtils.parseGson(validJsonWithoutId)).thenReturn(com.google.gson.JsonObject())
-//        whenever(messageUtils.getId(jsonObject)).thenReturn(null)
-//        whenever(messageUtils.getId(jsonObject)).thenReturn(null)
-//
-//        whenever(messageUtils.getTimestampAsLong(any())).thenReturn(100)
-//        val message = "message"
-//        whenever(messageProducer.produceMessage(com.google.gson.JsonObject(), """{"key": "value"}""",
-//                false, false, """{ "key": "value" }""", "_lastModifiedDateTime", false, false, false, false, false, encryptionResult, dataKeyResult, "adb",
-//                "collection")).thenReturn(message)
-//        val formattedKey = "0000-0000-00001"
-//
-//        whenever(messageUtils.generateKeyFromRecordBody(jsonObject)).thenReturn(formattedKey.toByteArray())
-//
-//        doNothing().whenever(MapUtility).ensureTable("adb:collection")
-//        doNothing().whenever(MapUtility).putBatch(any(), any())
-//
-//        val data = listOf(invalidJson2, validJsonWithoutId)
-//        val inputStreams = mutableListOf(getInputStream(data, validFileName))
-//        mapUtility.write(inputStreams)
-//
-//        val captor = argumentCaptor<ILoggingEvent>()
-//        verify(mockAppender, times(6)).doAppend(captor.capture())
-//        val formattedMessages = captor.allValues.map { it.formattedMessage }
-//
-//        Assert.assertTrue(formattedMessages.contains("Error processing record\", \"line_number\":\"1\", \"file_name\":\"adb.collection.0001.json.gz.enc\", \"error_message\":\"parse error"))
-//    }
-//
-//    @Test
-//    fun should_Log_Error_And_Retry_10_Times_When_Streaming_Line_Of_File_Fails() {
-//
-//        val root = LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger
-//        val mockAppender: Appender<ILoggingEvent> = mock()
-//        root.addAppender(mockAppender)
-//
-//        val dataKeyResult = DataKeyResult("", "", "")
-//        whenever(keyService.batchDataKey()).thenReturn(dataKeyResult)
-//
-//        val inputStream = ByteArrayInputStream("""{ "_id": {"key": "value"}}""".toByteArray())
-//        val s3InputStream = mock<S3ObjectInputStream>()
-//
-//        given(s3Service.objectInputStream("bucket", validFileName)).willReturn(s3InputStream)
-//        doThrow(RuntimeException("RESET ERROR")).whenever(MapUtility).getBufferedReader(any())
-//        doNothing().whenever(MapUtility).ensureTable("adb:collection")
-//        doNothing().whenever(MapUtility).putBatch(any(), any())
-//        val byteArray = """{ "_id": {"key": "value"}}""".toByteArray()
-//        given(cipherService.decompressingDecryptingStream(any(), any(), any())).willReturn(ByteArrayInputStream(byteArray))
-//        given(messageUtils.parseGson(any())).willReturn(Gson().fromJson("""{ "_id": {"key": "value"}}""", com.google.gson.JsonObject::class.java))
-//        val key = mock<Key>()
-//
-//        val inputStreams = mutableListOf(DecompressedStream(inputStream, validFileName, key, ""))
-//        mapUtility.write(inputStreams)
-//        verify(cipherService, times(10)).decompressingDecryptingStream(any(), any(), any())
-//
-//        val captor = argumentCaptor<ILoggingEvent>()
-//        verify(mockAppender, times(15)).doAppend(captor.capture())
-//        val formattedMessages = captor.allValues.map { it.formattedMessage }
-//
-//        Assert.assertTrue(formattedMessages.contains("Error streaming file\", \"attempt_number\":\"1\", \"file_name\":\"$validFileName\", \"error_message\":\"RESET ERROR"))
-//
-//        for (i in 2..10) {
-//            Assert.assertTrue(formattedMessages.contains("Error streaming file\", \"attempt_number\":\"$i\", \"file_name\":\"$validFileName\", \"error_message\":\"RESET ERROR"))
-//        }
-//    }

@@ -1,5 +1,5 @@
 #!/bin/bash
-# business-data/mongo/adb/2020-08-11/accepted-data.checkAutoCalcPendingData.0001.json.encryption.json
+
 export S3_BUCKET=${1:?Usage $0: bucket prefix}
 export S3_PREFIX=${2:-business-data/mongo/danielchicot_generate_historic_data_dev_100/}
 

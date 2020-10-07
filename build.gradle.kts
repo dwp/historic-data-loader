@@ -26,6 +26,7 @@ dependencies {
     implementation("org.apache.httpcomponents:httpclient:4.5.9")
     implementation("org.bouncycastle:bcprov-ext-jdk15on:1.62")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.4.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
 
     testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
     testImplementation("io.kotest:kotest-assertions-core-jvm:4.2.0")
