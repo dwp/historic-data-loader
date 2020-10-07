@@ -32,7 +32,7 @@ class S3RepositoryTest: StringSpec() {
                 } doReturnConsecutively listOf(truncatedResult1, truncatedResult2, finalResult)
             }
 
-            val s3Repository = S3Repository(amazonS3, bucket, objectPrefix, "database.collection")
+            val s3Repository = S3Repository(amazonS3, bucket, objectPrefix, "db.database.collection")
             val actual = s3Repository.objectSummaries()
 
             actual shouldBe listOf(objectSummaries1, objectSummaries2, objectSummaries3).flatten()
