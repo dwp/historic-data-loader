@@ -21,7 +21,6 @@ import java.io.InputStreamReader
 import java.io.Reader
 import java.net.URLEncoder
 
-// TODO: retries
 class HttpKeyService(private val httpClientProvider: HttpClientProvider,
                      private val uuidGenerator: UUIDGenerator,
                      private val dataKeyServiceUrl: String): KeyService {

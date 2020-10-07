@@ -3,6 +3,7 @@ package app.load.mapreduce
 import app.load.domain.DataKeyResult
 import app.load.domain.MappedRecord
 import app.load.services.FilterService
+import app.load.services.RetryService
 import com.nhaarman.mockitokotlin2.*
 import io.kotest.core.spec.style.StringSpec
 import org.apache.hadoop.hbase.KeyValue
@@ -52,7 +53,7 @@ class FilterTests: StringSpec()  {
             on { mappedRecord(any(), any(), any())} doReturn mappedRecord
         }
 
-        val retryUtility = mock<RetryUtility> {
+        val retryUtility = mock<RetryService> {
             on { batchDataKey() } doReturn DataKeyResult("dataKeyEncryptionKeyId", "plaintextDataKey", "ciphertextDataKey")
         }
 
