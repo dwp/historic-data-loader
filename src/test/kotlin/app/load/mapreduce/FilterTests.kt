@@ -4,9 +4,7 @@ import app.load.domain.DataKeyResult
 import app.load.domain.MappedRecord
 import app.load.services.FilterService
 import app.load.services.RetryService
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.*
 import io.kotest.core.spec.style.StringSpec
 import org.apache.hadoop.hbase.KeyValue
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
@@ -16,6 +14,28 @@ import org.apache.hadoop.mapreduce.Mapper
 
 class FilterTests: StringSpec()  {
 
+    init {
+        "shouldNotAddToBatchIfFilteredTooEarly" {
+            val ucMapper = ucMapper(mappedRecord(FilterService.FilterStatus.FilterTooEarly))
+            val context = context()
+            ucMapper.map(mock(), text(), context)
+            verifyZeroInteractions(context)
+        }
+
+        "shouldNotAddToBatchIfFilteredTooLate" {
+            val ucMapper = ucMapper(mappedRecord(FilterService.FilterStatus.FilterTooLate))
+            val context = context()
+            ucMapper.map(mock(), text(), context)
+            verifyZeroInteractions(context)
+        }
+
+        "shouldAddToBatchIfNotFiltered" {
+            val ucMapper = ucMapper(mappedRecord(FilterService.FilterStatus.DoNotFilter))
+            val context = context()
+            ucMapper.map(mock(), text(), context)
+            verify(context, times(1)).write(any(), any())
+        }
+    }
     private fun mappedRecord(filterStatus: FilterService.FilterStatus)
             = MappedRecord(ByteArray(0), "", 0L, filterStatus)
 

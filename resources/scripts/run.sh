@@ -7,5 +7,5 @@ export HADOOP_CLASSPATH=$(find /usr/lib/hbase/ -type f -name '*.jar' \! -name 's
 export HBASE_TABLE=automatedtests:danielchicot_generate_historic_data_dev_100_1
 export MAP_REDUCE_OUTPUT_DIRECTORY=/user/hadoop/import/$(uuidgen)
 export TOPIC_NAME=automatedtests.danielchicot_generate_historic_data_dev_100_1
-
-hadoop jar ./historic-data-loader-1.0-SNAPSHOT-all.jar
+aws s3 cp s3://danc-nifi-stub/historic-data-loader-all.jar .
+hadoop jar ./historic-data-loader-all.jar
