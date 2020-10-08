@@ -34,6 +34,7 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.2.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.4.2")
     testImplementation("com.google.code.gson:gson:2.8.5")
+    testImplementation("com.github.everit-org.json-schema:org.everit.json.schema:1.12.0")
 }
 
 configure<JavaPluginConvention> {

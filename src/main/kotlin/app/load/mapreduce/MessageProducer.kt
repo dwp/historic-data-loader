@@ -83,7 +83,7 @@ class MessageProducer {
 
     private val hdiVersion: String by lazy {
         try {
-            Manifests.read("Hdi-Version")
+            Manifests.read("Hdl-Version")
         }
         catch (e: Exception) {
             "NOT_SET"
