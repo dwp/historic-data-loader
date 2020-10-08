@@ -37,7 +37,7 @@ class MessageProducer {
    "timestamp": "$timestamp",
    "traceId": "$correlationId",
    "@type": "HDI",
-   "version": "$hdiVersion",
+   "version": "$hdlVersion",
    "message": {
        "@type": "$type",
        "_id": $messageId,
@@ -81,7 +81,7 @@ class MessageProducer {
         }
     }
 
-    private val hdiVersion: String by lazy {
+    private val hdlVersion: String by lazy {
         try {
             Manifests.read("Hdl-Version")
         }
