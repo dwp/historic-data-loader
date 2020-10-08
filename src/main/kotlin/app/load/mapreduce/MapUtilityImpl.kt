@@ -61,10 +61,6 @@ class MapUtilityImpl(private val cipherService: CipherService, private val filte
         val idIsString = (idModificationType == IdModification.UnmodifiedStringId) ||
                 (idModificationType == IdModification.FlattenedMongoId)
 
-        println("LINE: '$lineFromDump'.")
-        println("lastModifiedDateTimeSourceField: '$lastModifiedDateTimeSourceField'.")
-
-
         val messageWrapper = messageProducer.produceMessage(updatedLineAsJson, id,
                 idIsString,
                 idWasModified,

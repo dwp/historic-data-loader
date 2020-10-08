@@ -26,6 +26,7 @@ dependencies {
     implementation("org.bouncycastle:bcprov-ext-jdk15on:1.62")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.4.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
+    implementation("com.jcabi:jcabi-manifests:1.1")
 
     testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
     testImplementation("io.kotest:kotest-assertions-core-jvm:4.2.0")
@@ -33,7 +34,6 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.2.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.4.2")
     testImplementation("com.google.code.gson:gson:2.8.5")
-
 }
 
 configure<JavaPluginConvention> {
