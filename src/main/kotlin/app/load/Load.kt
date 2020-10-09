@@ -37,6 +37,7 @@ class Load : Configured(), Tool {
 
                 S3Repository.connect().let { s3Repository ->
                     s3Repository.allObjectSummaries().asSequence().map { "s3://${it.bucketName}/${it.key}" }
+                            .distinct()
                             .map(::Path).toList()
                             .forEach { path -> FileInputFormat.addInputPath(job, path) }
                 }
