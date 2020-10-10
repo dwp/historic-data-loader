@@ -47,7 +47,7 @@ class UcRecordReader : RecordReader<LongWritable, Text>() {
                     val plaintextKey = retryService.decryptKey(metadata.keyEncryptionKeyId, metadata.encryptedEncryptionKey)
                     val key: Key = SecretKeySpec(Base64.getDecoder().decode(plaintextKey), "AES")
                     val inputStream = byteArrayInputStream(fs, path)
-                    input = LineNumberReader(InputStreamReader(cipherService.decompressingDecryptingStream(inputStream, key, metadata.initialisationVector)))
+                    input = LineNumberReader(InputStreamReader(cipherService.decompressingDecryptingStream(fs.open(path), key, metadata.initialisationVector)))
                     currentFileSystem = fs
                     currentPath = path
                 }
