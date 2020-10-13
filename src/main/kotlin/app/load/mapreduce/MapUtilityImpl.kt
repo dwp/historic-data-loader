@@ -199,7 +199,7 @@ class MapUtilityImpl(private val cipherService: CipherService, private val filte
                     return Pair(outgoingValue, false)
                 }
                 else -> {
-                    logger.warn("Invalid $name object", "incoming_value" to "$incomingDateTime", "outgoing_value" to "")
+                    logger.debug("Invalid $name object", "incoming_value" to "$incomingDateTime", "outgoing_value" to "")
                     return Pair("", true)
                 }
             }
