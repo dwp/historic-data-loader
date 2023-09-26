@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.10")
     implementation("com.amazonaws:aws-java-sdk-core:1.11.701")
     implementation("com.amazonaws:aws-java-sdk-s3:1.11.701")
     implementation("com.beust:klaxon:4.0.2")
